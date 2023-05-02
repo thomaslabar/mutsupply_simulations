@@ -19,6 +19,7 @@ struct Population
     clades::Array{Clade}
     max_id::Int
     populationsize::Int64
+    generation::Int
 end
 
 struct Parameters
@@ -66,7 +67,7 @@ function mutation(population::Population)
         end
     end
 
-    return Population(new_clades,new_max_id,population.populationsize)     
+    return Population(new_clades,new_max_id,population.populationsize,population.generation+1)     
 end
 
 function selection(population::Population)
@@ -98,7 +99,7 @@ function selection(population::Population)
         end
     end
 
-    return Population(new_clades,new_max_id,n)
+    return Population(new_clades,new_max_id,n,population.generation)
 
 end
 
@@ -155,7 +156,24 @@ function add_pops_to_dataframe!(df::DataFrame,populations::Array{Population},par
     end
 end
 
-function evolve_gen_populations!(pops::Array{Population}, target_gen::Int64, start_gen ::Int, params::Parameters)
+function evolve_population(pop::Population, target_type::String, target::Number)
+
+    @assert target_type == "Generation" || target_type == "Fitness"
+
+    if target_type == "Generation"
+        while pop.generation < target
+            pop = selection(pop)
+            pop = mutation(pop)
+        end
+    elseif target_type == "Fitness"
+        while get_abundant_fitness(pop) < target
+            pop = selection(pop)
+            pop = mutation(pop)
+        end
+    end
+end
+
+function evolve_gen_populations!(pops::Array{Population}, target_gen::Int64, params::Parameters)
 
     """
     Evolves an array of populations from generation 'start_gen' to generation 'stop_gen'
@@ -165,8 +183,8 @@ function evolve_gen_populations!(pops::Array{Population}, target_gen::Int64, sta
 
     while g < target_gen
         for r in 1:params.replicates
-            pops[r] = mutation(pops[r])
             pops[r] = selection(pops[r])
+            pops[r] = mutation(pops[r])
         end
         g += 1
     end
@@ -244,16 +262,16 @@ function run_sim()
     exp = Experiment(params,
                      [Population([Clade(1,0,params.ancestorfitness,params.mutationrate,params.s_ben,[],
                       params.largepopulationsize)],1,
-                      params.largepopulationsize) for i in 1:params.replicates],
+                      params.largepopulationsize,0) for i in 1:params.replicates],
                      [Population([Clade(1,0,params.ancestorfitness,params.mutationrate,params.s_ben,[],
                       params.smallpopulationsize)],1,
-                      params.smallpopulationsize) for i in 1:params.replicates],
+                      params.smallpopulationsize,0) for i in 1:params.replicates],
                      [Population([Clade(1,0,params.ancestorfitness,params.mutationrate,params.s_ben,[],
                      params.smallpopulationsize)],1,
-                     params.smallpopulationsize) for i in 1:params.replicates],
+                     params.smallpopulationsize,0) for i in 1:params.replicates],
                      [Population([Clade(1,0,params.ancestorfitness,params.mutationrate,params.s_ben,[],
                       params.smallpopulationsize)],1,
-                      params.smallpopulationsize) for i in 1:params.replicates],
+                      params.smallpopulationsize,0) for i in 1:params.replicates],
                      0,-1,-1,-1)
 
     perform_experiment!(exp)
