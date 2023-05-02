@@ -9,8 +9,8 @@ struct Clade
     id::Int
     ancestor::Int
     fitness::Float64
-    #mutation_rate::Float64
-    #s_mean::Float64
+    mutation_rate::Float64
+    s_mean::Float64
     mutations::Array{Float64}
     individuals::Int
 end
@@ -57,13 +57,13 @@ function mutation(population::Population, params::Parameters)
             mutant_s_effect = rand(Exponential(0.01))
             new_mutations = deepcopy(clade.mutations)
             push!(new_mutations,mutant_s_effect)
-            mutant_clade = Clade(new_max_id,clade.id,clade.fitness+mutant_s_effect,new_mutations,1)
+            mutant_clade = Clade(new_max_id,clade.id,clade.fitness+mutant_s_effect,clade.mutation_rate,clade.s_mean,new_mutations,1)
             push!(new_clades,mutant_clade)
         end
 
         #handle non-mutants
         if clade.individuals - num_mutants > 0
-            push!(new_clades,Clade(clade.id,clade.ancestor,clade.fitness,clade.mutations,clade.individuals - num_mutants))
+            push!(new_clades,Clade(clade.id,clade.ancestor,clade.fitness,clade.mutation_rate,clade.s_mean,clade.mutations,clade.individuals - num_mutants))
         end
     end
 
@@ -95,7 +95,7 @@ function selection(population::Population)
     for (i,clade) in enumerate(population.clades)
         if num_offspring[i] > 0
             new_max_id = max(new_max_id,clade.id)
-            push!(new_clades,Clade(clade.id,clade.ancestor,clade.fitness,clade.mutations,num_offspring[i]))
+            push!(new_clades,Clade(clade.id,clade.ancestor,clade.fitness,clade.mutation_rate,clade.s_mean,clade.mutations,num_offspring[i]))
         end
     end
 
@@ -243,13 +243,17 @@ function run_sim()
                         parse(Int,retrieve(conf, "RANDOM_SEED")))
 
     exp = Experiment(params,
-                     [Population([Clade(1,0,params.ancestorfitness,[],params.largepopulationsize)],1,
+                     [Population([Clade(1,0,params.ancestorfitness,params.mutationrate,params.s_ben,[],
+                      params.largepopulationsize)],1,
                       params.largepopulationsize) for i in 1:params.replicates],
-                     [Population([Clade(1,0,params.ancestorfitness,[],params.smallpopulationsize)],1,
+                     [Population([Clade(1,0,params.ancestorfitness,params.mutationrate,params.s_ben,[],
+                      params.smallpopulationsize)],1,
                       params.smallpopulationsize) for i in 1:params.replicates],
-                     [Population([Clade(1,0,params.ancestorfitness,[],params.smallpopulationsize)],1,
-                      params.smallpopulationsize) for i in 1:params.replicates],
-                     [Population([Clade(1,0,params.ancestorfitness,[],params.smallpopulationsize)],1,
+                     [Population([Clade(1,0,params.ancestorfitness,params.mutationrate,params.s_ben,[],
+                     params.smallpopulationsize)],1,
+                     params.smallpopulationsize) for i in 1:params.replicates],
+                     [Population([Clade(1,0,params.ancestorfitness,params.mutationrate,params.s_ben,[],
+                      params.smallpopulationsize)],1,
                       params.smallpopulationsize) for i in 1:params.replicates],
                      0,-1,-1,-1)
 
