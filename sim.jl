@@ -23,8 +23,7 @@ struct Population
 end
 
 struct Parameters
-    smallpopulationsize::Int
-    largepopulationsize::Int
+    populationsize::Int
     mutationrate::Float64
     s_ben::Float64
     ancestorfitness::Float64
@@ -251,14 +250,13 @@ function run_sim()
         Random.seed!(rs)
     end
 
-    params = Parameters(parse(Int,retrieve(conf, "SMALL_POPULATION_SIZE")),
-                        parse(Int,retrieve(conf, "LARGE_POPULATION_SIZE")),
+    params = Parameters(parse(Int,retrieve(conf, "POPULATION_SIZE")),
                         parse(Float64,retrieve(conf, "MUTATION_RATE")),
                         parse(Float64,retrieve(conf, "BENEFICIAL_EFFECT")),
                         parse(Float64,retrieve(conf, "ANCESTOR_FITNESS")),
                         parse(Int,retrieve(conf, "NUM_REPLICATES")),
                         parse(Int,retrieve(conf, "RANDOM_SEED")))
-
+    """
     exp = Experiment(params,
                      [Population([Clade(1,0,params.ancestorfitness,params.mutationrate,params.s_ben,[],
                       params.largepopulationsize)],1,
@@ -275,8 +273,16 @@ function run_sim()
                      0,-1,-1,-1)
 
     perform_experiment!(exp)
+    """
+    populations = [Population([Clade(1,0,params.ancestorfitness,params.mutationrate,params.s_ben,[],
+                               params.populationsize)],1,
+                               params.populationsize,0) for i in 1:params.replicates]
 
-    save_sim(retrieve(conf, "SAVE_FILE"),exp,params)
+    for pop in populations
+        evolve_population(pop,"Fitness",1.0)
+    end
+
+    #save_sim(retrieve(conf, "SAVE_FILE"),exp,params)
 end
 
 run_sim()
