@@ -43,18 +43,17 @@ mutable struct Experiment
     small_supplygen::Int
 end
 
-function mutation(population::Population, params::Parameters)
+function mutation(population::Population)
     new_clades = Clade[]
     new_max_id = population.max_id
-    mu = params.mutationrate
 
     for clade in population.clades
         
         #handle mutants
-        num_mutants = min(rand(Poisson(clade.individuals*mu)),clade.individuals)
+        num_mutants = min(rand(Poisson(clade.individuals*clade.mutation_rate)),clade.individuals)
         for m in 1:num_mutants
             new_max_id += 1
-            mutant_s_effect = rand(Exponential(0.01))
+            mutant_s_effect = rand(Exponential(clade.s_mean))
             new_mutations = deepcopy(clade.mutations)
             push!(new_mutations,mutant_s_effect)
             mutant_clade = Clade(new_max_id,clade.id,clade.fitness+mutant_s_effect,clade.mutation_rate,clade.s_mean,new_mutations,1)
@@ -166,7 +165,7 @@ function evolve_gen_populations!(pops::Array{Population}, target_gen::Int64, sta
 
     while g < target_gen
         for r in 1:params.replicates
-            pops[r] = mutation(pops[r],params)
+            pops[r] = mutation(pops[r])
             pops[r] = selection(pops[r])
         end
         g += 1
@@ -187,7 +186,7 @@ function evolve_fit_populations!(pops::Array{Population}, target_fitness::Float6
         avg_fitness = 0.0
 
         for r in 1:params.replicates
-            pops[r] = mutation(pops[r],params)
+            pops[r] = mutation(pops[r])
             pops[r] = selection(pops[r])
 
             #The (g+1) is here to sync with the g%50 below
