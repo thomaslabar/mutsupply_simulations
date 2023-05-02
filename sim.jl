@@ -9,6 +9,8 @@ struct Clade
     id::Int
     ancestor::Int
     fitness::Float64
+    #mutation_rate::Float64
+    #s_mean::Float64
     mutations::Array{Float64}
     individuals::Int
 end
@@ -225,7 +227,12 @@ function run_sim()
     conf = ConfParse("sim.cfg")
     parse_conf!(conf)
 
-    Random.seed!(parse(Int,retrieve(conf, "RANDOM_SEED")))
+    rs = parse(Int,retrieve(conf, "RANDOM_SEED"))
+    if rs == 0
+        Random.seed!()
+    else
+        Random.seed!(rs)
+    end
 
     params = Parameters(parse(Int,retrieve(conf, "SMALL_POPULATION_SIZE")),
                         parse(Int,retrieve(conf, "LARGE_POPULATION_SIZE")),
