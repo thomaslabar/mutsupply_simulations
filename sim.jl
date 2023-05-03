@@ -144,7 +144,7 @@ function add_pops_to_dataframe!(df::DataFrame,populations::Array{Population},par
     end
 end
 
-function evolve_population!(pop::Population, target_type::String, target::Number)
+function evolve(pop::Population, target_type::String, target::Number)
 
     @assert target_type == "Generation" || target_type == "Fitness"
 
@@ -159,6 +159,7 @@ function evolve_population!(pop::Population, target_type::String, target::Number
             pop = mutation(pop)
         end
     end
+    return pop
 end
 
 function run_sim()
@@ -183,9 +184,10 @@ function run_sim()
     populations = [Population([Clade(1,0,params.ancestorfitness,params.mutationrate,params.s_ben,[],
                                params.populationsize)],1,
                                params.populationsize,0) for i in 1:params.replicates]
-
-    for pop in populations
-        evolve_population!(pop,"Fitness",1.0)
+   
+    for i in 1:params.replicates
+        populations[i] = evolve(populations[i],"Fitness",1.0)
+        print_abundant_clades(populations[i],1)
     end
     save_populations("test.csv",populations,params)
 
