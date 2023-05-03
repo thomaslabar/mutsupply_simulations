@@ -29,6 +29,7 @@ struct Parameters
     ancestorfitness::Float64
     replicates::Int
     random_seed::Int
+    append::Bool
 end
 
 mutable struct Experiment
@@ -116,9 +117,8 @@ function get_abundant_fitness(population::Population)
     return clades[1].fitness
 end
 
-function save_sim(filename::String, exp::Experiment, params::Parameters)
+function save_populations(filename::String, pops::Array{Population}, params::Parameters)
     finalresults = DataFrame(random_seed = Int[],
-                             population_type = String[],
                              replicate = Int64[],
                              population_size = Integer[],
                              mutation_rate = Float64[],
@@ -129,33 +129,22 @@ function save_sim(filename::String, exp::Experiment, params::Parameters)
                              fitness = Float64[],
                              mutations = Array{Float64}[]
                              )
-    add_pops_to_dataframe!(finalresults,exp.largereplicates,params,exp.large_repairgen)
-    add_pops_to_dataframe!(finalresults,exp.smallreplicates_equalgen,params,exp.large_repairgen)
-    add_pops_to_dataframe!(finalresults,exp.smallreplicates_equalfitness,params,exp.small_repairgen)
-    add_pops_to_dataframe!(finalresults,exp.smallreplicates_equalsupply,params,exp.small_supplygen)
-
-    CSV.write(filename, finalresults)
     
+    add_pops_to_dataframe!(finalresults,pops,params)   
+    CSV.write(filename, finalresults, append = params.append)    
 end
 
-function add_pops_to_dataframe!(df::DataFrame,populations::Array{Population},params::Parameters,generation::Int)
+function add_pops_to_dataframe!(df::DataFrame,populations::Array{Population},params::Parameters)
     for (i,pop) in enumerate(populations) 
         clades = deepcopy(pop.clades)
         sort!(clades, by = v -> v.individuals, rev = true)
         clade = clades[1]
-        if pop.populationsize == params.largepopulationsize
-            type_str = "Large"
-        elseif pop.populationsize == params.smallpopulationsize
-            type_str = "Small"
-        else
-            type_str = "Unknown"
-        end
-        push!(df,[params.random_seed,type_str,i,pop.populationsize,params.mutationrate,params.s_ben,generation,
+        push!(df,[params.random_seed,i,pop.populationsize,params.mutationrate,params.s_ben,pop.generation,
                             clade.individuals,length(clade.mutations),clade.fitness,clade.mutations])
     end
 end
 
-function evolve_population(pop::Population, target_type::String, target::Number)
+function evolve_population!(pop::Population, target_type::String, target::Number)
 
     @assert target_type == "Generation" || target_type == "Fitness"
 
@@ -170,72 +159,6 @@ function evolve_population(pop::Population, target_type::String, target::Number)
             pop = mutation(pop)
         end
     end
-end
-
-function evolve_gen_populations!(pops::Array{Population}, target_gen::Int64, params::Parameters)
-
-    """
-    Evolves an array of populations from generation 'start_gen' to generation 'stop_gen'
-    """
-
-    g = start_gen
-
-    while g < target_gen
-        for r in 1:params.replicates
-            pops[r] = selection(pops[r])
-            pops[r] = mutation(pops[r])
-        end
-        g += 1
-    end
-
-    return g
-end
-
-function evolve_fit_populations!(pops::Array{Population}, target_fitness::Float64, start_gen ::Int, params::Parameters)
-    """
-    Evolves an array of populations to a target fitness
-    """
-    avg_fitness = 0.0
-    g = start_gen
-
-    while avg_fitness < target_fitness
-
-        avg_fitness = 0.0
-
-        for r in 1:params.replicates
-            pops[r] = mutation(pops[r])
-            pops[r] = selection(pops[r])
-
-            #The (g+1) is here to sync with the g%50 below
-            if (g+1)%50 == 0
-                avg_fitness += get_abundant_fitness(pops[r])
-            end
-        end
-        g += 1
-
-        avg_fitness /= params.replicates
-        
-    end
-    return g
-end
-
-function perform_experiment!(exp::Experiment)
-    
-    exp.large_repairgen = evolve_fit_populations!(exp.largereplicates,1.0,exp.generation,exp.params)
-    exp.generation = evolve_gen_populations!(exp.smallreplicates_equalgen,exp.large_repairgen,exp.generation,exp.params)
-    println("Equal Gens Done")
-
-    exp.smallreplicates_equalfitness = deepcopy(exp.smallreplicates_equalgen)
-    exp.generation = evolve_fit_populations!(exp.smallreplicates_equalfitness,1.0,exp.generation,exp.params)
-    exp.small_repairgen = exp.generation
-    println("Equal Fitness Done")
-
-    exp.smallreplicates_equalsupply = deepcopy(exp.smallreplicates_equalfitness)
-    total_supply_gens = convert(Int,exp.large_repairgen*exp.params.largepopulationsize/exp.params.smallpopulationsize)
-    exp.generation = evolve_gen_populations!(exp.smallreplicates_equalsupply,total_supply_gens,exp.generation,exp.params)
-    exp.small_supplygen = exp.generation
-    println("Equal Mut. Supply Done")
-
 end
 
 function run_sim()
@@ -255,34 +178,17 @@ function run_sim()
                         parse(Float64,retrieve(conf, "BENEFICIAL_EFFECT")),
                         parse(Float64,retrieve(conf, "ANCESTOR_FITNESS")),
                         parse(Int,retrieve(conf, "NUM_REPLICATES")),
-                        parse(Int,retrieve(conf, "RANDOM_SEED")))
-    """
-    exp = Experiment(params,
-                     [Population([Clade(1,0,params.ancestorfitness,params.mutationrate,params.s_ben,[],
-                      params.largepopulationsize)],1,
-                      params.largepopulationsize,0) for i in 1:params.replicates],
-                     [Population([Clade(1,0,params.ancestorfitness,params.mutationrate,params.s_ben,[],
-                      params.smallpopulationsize)],1,
-                      params.smallpopulationsize,0) for i in 1:params.replicates],
-                     [Population([Clade(1,0,params.ancestorfitness,params.mutationrate,params.s_ben,[],
-                     params.smallpopulationsize)],1,
-                     params.smallpopulationsize,0) for i in 1:params.replicates],
-                     [Population([Clade(1,0,params.ancestorfitness,params.mutationrate,params.s_ben,[],
-                      params.smallpopulationsize)],1,
-                      params.smallpopulationsize,0) for i in 1:params.replicates],
-                     0,-1,-1,-1)
-
-    perform_experiment!(exp)
-    """
+                        parse(Int,retrieve(conf, "RANDOM_SEED")),
+                        parse(Bool,retrieve(conf, "APPEND_SAVE_FILE")))
     populations = [Population([Clade(1,0,params.ancestorfitness,params.mutationrate,params.s_ben,[],
                                params.populationsize)],1,
                                params.populationsize,0) for i in 1:params.replicates]
 
     for pop in populations
-        evolve_population(pop,"Fitness",1.0)
+        evolve_population!(pop,"Fitness",1.0)
     end
+    save_populations("test.csv",populations,params)
 
-    #save_sim(retrieve(conf, "SAVE_FILE"),exp,params)
 end
 
 run_sim()
