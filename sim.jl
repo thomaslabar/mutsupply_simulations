@@ -105,6 +105,10 @@ function get_abundant_fitness(population::Population)
     return clades[1].fitness
 end
 
+function get_avg_generation(populations::Array{Population})
+    return sum([populations[i].generation for i in 1:length(populations)])/length(populations)
+end
+
 function save_populations(filename::String, pops::Array{Population}, params::Parameters, append::Bool)
     finalresults = DataFrame(random_seed = Int[],
                              replicate = Int64[],
@@ -183,6 +187,12 @@ function run_sim()
     end
     save_populations("test.csv",large_populations,params,false)
 
+    gen_target = ceil(get_avg_generation(large_populations))
+    for i in 1:params.replicates
+        small_populations[i] = evolve(small_populations[i],"Generation",gen_target)
+        print_abundant_clades(small_populations[i],1)
+    end
+    save_populations("test.csv",small_populations,params,true)
 end
 
 run_sim()
