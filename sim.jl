@@ -23,25 +23,13 @@ struct Population
 end
 
 struct Parameters
-    populationsize::Int
+    largepopulationsize::Int
+    smallpopulationsize::Int
     mutationrate::Float64
     s_ben::Float64
     ancestorfitness::Float64
     replicates::Int
     random_seed::Int
-    append::Bool
-end
-
-mutable struct Experiment
-    const params::Parameters
-    largereplicates::Array{Population}
-    smallreplicates_equalgen::Array{Population}
-    smallreplicates_equalfitness::Array{Population}
-    smallreplicates_equalsupply::Array{Population}
-    generation::Int
-    large_repairgen::Int
-    small_repairgen::Int
-    small_supplygen::Int
 end
 
 function mutation(population::Population)
@@ -117,7 +105,7 @@ function get_abundant_fitness(population::Population)
     return clades[1].fitness
 end
 
-function save_populations(filename::String, pops::Array{Population}, params::Parameters)
+function save_populations(filename::String, pops::Array{Population}, params::Parameters, append::Bool)
     finalresults = DataFrame(random_seed = Int[],
                              replicate = Int64[],
                              population_size = Integer[],
@@ -131,7 +119,7 @@ function save_populations(filename::String, pops::Array{Population}, params::Par
                              )
     
     add_pops_to_dataframe!(finalresults,pops,params)   
-    CSV.write(filename, finalresults, append = params.append)    
+    CSV.write(filename, finalresults, append = append)    
 end
 
 function add_pops_to_dataframe!(df::DataFrame,populations::Array{Population},params::Parameters)
@@ -174,22 +162,26 @@ function run_sim()
         Random.seed!(rs)
     end
 
-    params = Parameters(parse(Int,retrieve(conf, "POPULATION_SIZE")),
+    params = Parameters(parse(Int,retrieve(conf, "LARGE_POPULATION_SIZE")),
+                        parse(Int,retrieve(conf, "SMALL_POPULATION_SIZE")),
                         parse(Float64,retrieve(conf, "MUTATION_RATE")),
                         parse(Float64,retrieve(conf, "BENEFICIAL_EFFECT")),
                         parse(Float64,retrieve(conf, "ANCESTOR_FITNESS")),
                         parse(Int,retrieve(conf, "NUM_REPLICATES")),
-                        parse(Int,retrieve(conf, "RANDOM_SEED")),
-                        parse(Bool,retrieve(conf, "APPEND_SAVE_FILE")))
-    populations = [Population([Clade(1,0,params.ancestorfitness,params.mutationrate,params.s_ben,[],
-                               params.populationsize)],1,
-                               params.populationsize,0) for i in 1:params.replicates]
-   
+                        parse(Int,retrieve(conf, "RANDOM_SEED")))
+
+    large_populations = [Population([Clade(1,0,params.ancestorfitness,params.mutationrate,params.s_ben,[],
+                               params.largepopulationsize)],1,
+                               params.largepopulationsize,0) for i in 1:params.replicates]
+    small_populations = [Population([Clade(1,0,params.ancestorfitness,params.mutationrate,params.s_ben,[],
+                               params.smallpopulationsize)],1,
+                               params.smallpopulationsize,0) for i in 1:params.replicates]
+
     for i in 1:params.replicates
-        populations[i] = evolve(populations[i],"Fitness",1.0)
-        print_abundant_clades(populations[i],1)
+        large_populations[i] = evolve(large_populations[i],"Fitness",1.0)
+        print_abundant_clades(large_populations[i],1)
     end
-    save_populations("test.csv",populations,params)
+    save_populations("test.csv",large_populations,params,false)
 
 end
 
