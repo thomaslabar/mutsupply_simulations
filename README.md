@@ -1,6 +1,6 @@
 # Mutation Supply Simulations
 
-This project contains scripts to explore hypotheses concerning the role of population size in altering
+This project contains Julia scripts to explore hypotheses concerning the role of population size in altering
 the genetic architecture of evolutonary repair in asexual populations.
 
 ## Description
@@ -19,6 +19,13 @@ small populations evolve until they experience the same total experimental mutat
 (population size * mutation rate * generations) as the large populations. In other words, if large populations
 have 100x more individuals as the small populations, the small populations will evolve for 100x more generations.
 At the end of each of these steps, data is saved in CSV format.
+
+The project currently consists of two files:
+    1. sim.jl, which contains all the structs and functions required to run the simulations in addition to 
+    actually running the simulation itself. Later, this file will seperate the actual running of the simulation 
+    from struct and function definitions.
+
+    2. sim.cfg, which contains all the parameters that can be changed for the simulation.
 
 ## Acknowledgments
 
