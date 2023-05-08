@@ -6,8 +6,8 @@ the genetic architecture of evolutonary repair in asexual populations.
 ## Description
 
 This project contains code to simulate the evolution of asexual populations adapting to a 
-novel environment with an exponential distribution of beneficial fitness effects. It was designed
-to simulate an evolutionary repair experiment (cells adapting in response to a genetic perturbation) 
+novel environment with an exponential distribution of beneficial fitness effects (no neutral or deleterious mutations). 
+It was designed to simulate an evolutionary repair experiment (cells adapting in response to a genetic perturbation) 
 with two population size treatments. A genetic perturbation is simulated by givning the ancestor 
 genotype of the experiment a fitness below 1.0 (default ancestral fitness is 0.85). 
 
@@ -21,11 +21,19 @@ have 100x more individuals as the small populations, the small populations will 
 At the end of each of these steps, data is saved in CSV format.
 
 The project currently consists of two files:
-    1. sim.jl, which contains all the structs and functions required to run the simulations in addition to 
-    actually running the simulation itself. Later, this file will seperate the actual running of the simulation 
-    from struct and function definitions.
 
-    2. sim.cfg, which contains all the parameters that can be changed for the simulation.
+1. sim.jl, which contains all the structs and functions required to run the simulations in addition to 
+actually running the simulation itself. Later, this file will seperate the actual running of the simulation 
+from struct and function definitions.
+
+2. sim.cfg, which contains all the parameters that can be changed for the simulation.
+    - Large and small population sizes
+    - Beneficial mutation rate
+    - Mean effect of beneficial mutations (always exponentially-distributed)
+    - Ancestor fitness 
+    - Number of experimental replicates
+    - Random seed
+    - Save File Name (all data saved to one file)
 
 ## Acknowledgments
 
