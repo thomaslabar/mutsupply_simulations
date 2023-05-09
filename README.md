@@ -35,6 +35,14 @@ from struct and function definitions.
     - Random seed
     - Save File Name (all data saved to one file)
 
+Files to be created:
+
+1. sim_functions.jl, a file to seperate the file that runs the simulation from one that defines all
+functions
+
+2. analysis.jl, a script to run the specific analysis and plotting for these simulations. May also
+break down into analysis.jl and analyze_functions.jl
+
 ## Acknowledgments
 
 * [README template](https://gist.github.com/DomPizzie/7a5ff55ffa9081f2de27c315f5018afc)
