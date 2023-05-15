@@ -1,9 +1,9 @@
 using Distributions
-using Random
 using LinearAlgebra
 using CSV
 using DataFrames
-using ConfParser
+
+include("sim_functions.jl")
 
 struct Clade
     id::Int
@@ -20,16 +20,6 @@ struct Population
     max_id::Int
     populationsize::Int64
     generation::Int
-end
-
-struct Parameters
-    largepopulationsize::Int
-    smallpopulationsize::Int
-    mutationrate::Float64
-    s_ben::Float64
-    ancestorfitness::Float64
-    replicates::Int
-    random_seed::Int
 end
 
 function mutation(population::Population)
@@ -156,23 +146,13 @@ end
 
 function run_sim()
 
-    conf = ConfParse("sim.cfg")
-    parse_conf!(conf)
+    params = get_parameters("sim.cfg")
 
-    rs = parse(Int,retrieve(conf, "RANDOM_SEED"))
-    if rs == 0
+    if params.random_seed == 0
         Random.seed!()
     else
         Random.seed!(rs)
     end
-
-    params = Parameters(parse(Int,retrieve(conf, "LARGE_POPULATION_SIZE")),
-                        parse(Int,retrieve(conf, "SMALL_POPULATION_SIZE")),
-                        parse(Float64,retrieve(conf, "MUTATION_RATE")),
-                        parse(Float64,retrieve(conf, "BENEFICIAL_EFFECT")),
-                        parse(Float64,retrieve(conf, "ANCESTOR_FITNESS")),
-                        parse(Int,retrieve(conf, "NUM_REPLICATES")),
-                        parse(Int,retrieve(conf, "RANDOM_SEED")))
 
     large_populations = [Population([Clade(1,0,params.ancestorfitness,params.mutationrate,params.s_ben,[],
                                params.largepopulationsize)],1,
