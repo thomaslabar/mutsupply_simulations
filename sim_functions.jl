@@ -17,7 +17,7 @@ end
 
 function get_parameters(config_file::String)
     """
-    This function reads in data in the specified config file (sim.cfg) and returns a 
+    This function reads in data from the specified config file (sim.cfg) and returns a 
     parameter struct to store the data
     """
 
