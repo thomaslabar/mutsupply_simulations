@@ -5,16 +5,6 @@ using DataFrames
 
 include("sim_functions.jl")
 
-struct Clade
-    id::Int
-    ancestor::Int
-    fitness::Float64
-    mutation_rate::Float64
-    s_mean::Float64
-    mutations::Array{Float64}
-    individuals::Int
-end
-
 struct Population
     clades::Array{Clade}
     max_id::Int

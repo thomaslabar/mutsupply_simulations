@@ -1,8 +1,9 @@
 using Random
 using ConfParser
 
+
 """
-This struct is used to hold all the relevant parameters for the experiment. It is created from
+The Parameters struct is used to hold all the relevant parameters for the experiment. It is created from
 the data in sim.cfg.
 """
 struct Parameters
@@ -13,6 +14,27 @@ struct Parameters
     ancestorfitness::Float64
     replicates::Int
     random_seed::Int
+end
+
+"""
+The Clade struct represents a given genotype (not an individual) and how many individuals are of that genotype.
+In addition to the genotype's fitness and the collection of mutations its accumulated over its evolution,
+it also contains its beneficial mutation rate and the mean selection coefficient of beneficial mutations 
+(the mean of an exponential distribution). These are stored as genotype parameters to allow for their
+potential evolution (i.e., global epistasis or mutator strains). However, they are currently kept
+constant.
+
+Note that this is not a mutable struct. During every generation, a new Clade object is created for each
+genotype
+"""
+struct Clade
+    id::Int
+    ancestor::Int
+    fitness::Float64
+    mutation_rate::Float64
+    s_mean::Float64
+    mutations::Array{Float64}
+    individuals::Int
 end
 
 function get_parameters(config_file::String)
