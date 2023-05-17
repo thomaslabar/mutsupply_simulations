@@ -8,13 +8,19 @@ using Statistics
 
 function get_mutation_stats(df::DataFrame)
 
+    """
+    This function prints the mean and standard deviation for all fixed mutations (in the "mutations" column)
+        from an input CSV file. A lot of this function is merely converting the inputted column from an array
+        of strings to a 2D array to a 1D array.
+    """
+
     mutations = df.mutations
 
     #The array of mutational effects is read as a string by Julia. The below line handles this by 
     #removing the string quotations, spliting up the data by commas, then parses to Float64. This results
     # in an array of arrays.
     
-    mutation_strings = [chop(mutations[i]; head=1, tail=1) for i in eachindex(mutations)]
+    mutation_strings = [chop(mutations[i]; head=1, tail=1) for i in eachindex(mutations)] #removes '[' and ']' from strings
     mutation_strings = [split(mutation_strings[i], ',') for i in eachindex(mutation_strings)]
     mutation_strings = [i for i in mutation_strings if i!= ["loat64["]] #eliminates empty arrays (for pops with no fixed mutations)
 
@@ -27,7 +33,12 @@ function get_mutation_stats(df::DataFrame)
     println(std(mutation_data))
 end
 
-function run_analysis(csv_file::String)
+function run_analysis()
+    """
+    This function runs all the analyses.
+    """
+
+    csv_file  = "test.csv"
     df = DataFrame(CSV.File(csv_file))
     
     large_pop_data = filter(:population_size => n -> n == 100000000, df)
@@ -41,4 +52,4 @@ function run_analysis(csv_file::String)
     
 end
 
-run_analysis("test.csv")
+run_analysis()
