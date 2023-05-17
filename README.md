@@ -37,10 +37,7 @@ from struct and function definitions.
 
 3. sim_functions.jl (work in progress), which will contain all functions to run simulations.
 
-Files to be created:
-
-1. analysis.jl, a script to run the specific analysis and plotting for these simulations. May also
-break down into analysis.jl and analyze_functions.jl
+4. analysis.jl (work in progress), which contains all code to analyze the results of the simulations
 
 ## Acknowledgments
 
