@@ -56,3 +56,19 @@ function get_parameters(config_file::String)
 
     return params
 end
+
+function add_pops_to_dataframe!(df::DataFrame,populations::Array{Population},params::Parameters)
+    """
+    This function takes as input an array of populations and the simulation parameters and addes them
+        to an inputted dataframe. It is used by the function 'save_populations' which writes/appends
+        this dataframe to a CSV file.
+    """
+
+    for (i,pop) in enumerate(populations) 
+        clades = deepcopy(pop.clades)
+        sort!(clades, by = v -> v.individuals, rev = true)
+        clade = clades[1]
+        push!(df,[params.random_seed,i,pop.populationsize,params.mutationrate,params.s_ben,pop.generation,
+                            clade.individuals,length(clade.mutations),clade.fitness,clade.mutations])
+    end
+end

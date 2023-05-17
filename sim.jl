@@ -106,16 +106,6 @@ function save_populations(filename::String, pops::Array{Population}, params::Par
     CSV.write(filename, finalresults, append = append)    
 end
 
-function add_pops_to_dataframe!(df::DataFrame,populations::Array{Population},params::Parameters)
-    for (i,pop) in enumerate(populations) 
-        clades = deepcopy(pop.clades)
-        sort!(clades, by = v -> v.individuals, rev = true)
-        clade = clades[1]
-        push!(df,[params.random_seed,i,pop.populationsize,params.mutationrate,params.s_ben,pop.generation,
-                            clade.individuals,length(clade.mutations),clade.fitness,clade.mutations])
-    end
-end
-
 function evolve(pop::Population, target_type::String, target::Number)
 
     @assert target_type == "Generation" || target_type == "Fitness"
