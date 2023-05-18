@@ -11,7 +11,7 @@ function convert_mutation_data_to_array(mutations::Array{String})
     """
     This function takes in an array of strings, each of which represents an array of floats 
         that are the mutational effects for one population. It converts that to one array of floats
-        (so, it combines data from every population together)
+        (it combines data from every population together)
 
     It returns that array of floats
     """
@@ -31,7 +31,7 @@ function convert_mutation_data_to_array(mutations::Array{String})
     return mutation_data
 end
 
-function get_mutation_stats(df::DataFrame)
+function save_mutation_stats(df::DataFrame, filename::String)
 
     """
     This function is currently a work in progress, but will eventually return a dataframe with each treatment's 
@@ -41,10 +41,34 @@ function get_mutation_stats(df::DataFrame)
 
     """
     @assert "mutations" in names(df)    
-    mutation_data = convert_mutation_data_to_array(df.mutations)
+    @assert "treatment" in names(df)  
+
+    mut_stats = DataFrame(treatment = String[],
+                          criteria = String[],
+                          number = Int[],
+                          mean = Float64[],
+                          st_dev = Float64[])
+
+    treatment_names = sort(unique(df.treatment)) #I sort this so "Large_repaired is first, which is required in the loop below)
+
+    large_n = 0
+
+    for t in treatment_names
+        treatment_data = filter(:treatment => n -> n == t, df)
+        mutation_data = convert_mutation_data_to_array(treatment_data.mutations)
+        push!(mut_stats,[t,"All",length(mutation_data),mean(mutation_data),std(mutation_data)])
+        if t == "Large_repaired"
+            large_n = length(mutation_data)
+        else
+            #This code looks only at the n mutations with the largest effect, where n is the total number of 
+            #mutations across all large populations
+            top_mutation_data = sort(mutation_data, rev = true)[1:min(length(mutation_data),large_n)]
+            push!(mut_stats,[t,"Top_n",length(top_mutation_data),mean(top_mutation_data),std(top_mutation_data)])
+        end
+    end
 
     
-    return length(mutation_data), mean(mutation_data), std(mutation_data)
+    CSV.write(filename, mut_stats)    
 end
 
 function run_analysis()
@@ -55,15 +79,7 @@ function run_analysis()
     csv_file  = "test.csv"
     df = DataFrame(CSV.File(csv_file))
     
-    large_pop_data = filter(:population_size => n -> n == 100000000, df)
-    a,b,c = get_mutation_stats(large_pop_data)
-
-    small_pop_data = filter(:generation => n -> n == 569, df)
-    a,b,c = get_mutation_stats(small_pop_data)
-
-    small_totalmutsupply_pop_data = filter(:generation => n -> n == 56900, df)
-    a,b,c = get_mutation_stats(small_totalmutsupply_pop_data)
-    
+    save_mutation_stats(df, "test_mutation_stats.csv")
 end
 
 run_analysis()
