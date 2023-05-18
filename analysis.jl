@@ -5,6 +5,7 @@ This file runs the analyses on a prespecified CSV file outputted from sim.jl
 using CSV
 using DataFrames
 using Statistics
+using Plots
 
 function convert_mutation_data_to_array(mutations::Array{String})
 
@@ -42,14 +43,15 @@ function save_mutation_stats(df::DataFrame, filename::String)
     """
     @assert "mutations" in names(df)    
     @assert "treatment" in names(df)  
+    
+    treatment_names = sort(unique(df.treatment)) #I sort this so "Large_repaired is first, which is required in the loop below)
+    @assert "Large_repaired" in treatment_names
 
     mut_stats = DataFrame(treatment = String[],
                           criteria = String[],
                           number = Int[],
                           mean = Float64[],
                           st_dev = Float64[])
-
-    treatment_names = sort(unique(df.treatment)) #I sort this so "Large_repaired is first, which is required in the loop below)
 
     large_n = 0
 
@@ -71,6 +73,50 @@ function save_mutation_stats(df::DataFrame, filename::String)
     CSV.write(filename, mut_stats)    
 end
 
+function plot_mutation_data(df::DataFrame, filename::String)
+    """
+    This function will, once completed plot the distribution of fixed mutational effects for each treatment. It 
+    will also plot comparisons between the large populations and each small-population treatment.
+
+    It makes the following plots:
+        1. Histograms of mutational effects for all 4 treatments (test_all.png)
+        2. Histograms of mutational effects for top n mutations for all 4 treatments (test_topn.png)
+    """
+
+    @assert "mutations" in names(df)    
+    @assert "treatment" in names(df) 
+    
+    treatment_names = sort(unique(df.treatment)) #I sort this so "Large_repaired is first, which is required in the loop below)
+    @assert "Large_repaired" in treatment_names
+
+    large_n = 0
+    mutation_df = Dict()
+    max_s = -1
+    min_s = 100
+    for t in treatment_names
+        treatment_data = filter(:treatment => n -> n == t, df)
+        mutation_data = convert_mutation_data_to_array(treatment_data.mutations)
+        max_s = max(max_s,maximum(mutation_data))
+        min_s = min(min_s,minimum(mutation_data))
+        if t == "Large_repaired"
+            large_n = length(mutation_data)
+        end
+        mutation_df[t*"_all"] = mutation_data
+        top_mutation_data = sort(mutation_data, rev = true)[1:min(length(mutation_data),large_n)]
+        mutation_df[t*"_top_n"] = top_mutation_data
+    end
+
+    y_all = [mutation_df[t*"_all"] for t in treatment_names]
+    plt_all = histogram(y_all, layout = (2,2), legend = false, normalize=:pdf)
+    xlims!(min_s,max_s)
+    savefig(plt_all,"test_all.png")
+
+    y_top = [mutation_df[t*"_top_n"] for t in treatment_names]
+    plt_top = histogram(y_top, layout = (2,2), legend = false, normalize=:pdf)
+    xlims!(min_s,max_s)
+    savefig(plt_top,"test_topn.png")
+end
+
 function run_analysis()
     """
     This function runs all the analyses.
@@ -80,6 +126,7 @@ function run_analysis()
     df = DataFrame(CSV.File(csv_file))
     
     save_mutation_stats(df, "test_mutation_stats.csv")
+    plot_mutation_data(df,"test_plots.jpg")
 end
 
 run_analysis()
