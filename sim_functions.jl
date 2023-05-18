@@ -1,5 +1,6 @@
 using Random
 using ConfParser
+using DataFrames
 
 
 """
@@ -37,6 +38,19 @@ struct Clade
     individuals::Int
 end
 
+"""
+The Population struct is at its heart an array of Clades (see above). It also contains an max_id and 
+    population size variables for convienence for some functions (so one does not have to count every
+    time). It also keeps track of the (discrete) generations it has evolved for. Like with Clade
+    structs, this is immutable and recreated every generation.  
+"""
+struct Population
+    clades::Array{Clade}
+    max_id::Int
+    populationsize::Int64
+    generation::Int
+end
+
 function get_parameters(config_file::String)
     """
     This function reads in data from the specified config file (sim.cfg) and returns a 
@@ -57,18 +71,45 @@ function get_parameters(config_file::String)
     return params
 end
 
-function add_pops_to_dataframe!(df::DataFrame,populations::Array{Population},params::Parameters)
+function add_pops_to_dataframe!(df::DataFrame,populations::Array{Population},params::Parameters,treatment::String)
     """
     This function takes as input an array of populations and the simulation parameters and addes them
         to an inputted dataframe. It is used by the function 'save_populations' which writes/appends
-        this dataframe to a CSV file.
+        this dataframe to a CSV file. 
+        
+        Note: it saves the data from the most abundant clade in the population, not the population as a whole.
     """
 
     for (i,pop) in enumerate(populations) 
         clades = deepcopy(pop.clades)
         sort!(clades, by = v -> v.individuals, rev = true)
         clade = clades[1]
-        push!(df,[params.random_seed,i,pop.populationsize,params.mutationrate,params.s_ben,pop.generation,
+        push!(df,[treatment,i,params.random_seed,pop.populationsize,params.mutationrate,params.s_ben,pop.generation,
                             clade.individuals,length(clade.mutations),clade.fitness,clade.mutations])
     end
+end
+
+function save_populations(filename::String, pops::Array{Population}, params::Parameters, treatment::String, append::Bool)
+    """
+    This function saves data about a population to a dataframe and then to a prespecified CSV file. 
+    It can either create a new CSV file or append if the file exists. It saves data about the parameters 
+    of the population/experiment and the treatment.
+    """
+
+
+    finalresults = DataFrame(treatment = String[],
+                             replicate = Int64[],
+                             random_seed = Int[],
+                             population_size = Integer[],
+                             mutation_rate = Float64[],
+                             DFE_mean = Float64[],
+                             generation = Integer[],
+                             num_individuals = Integer[],
+                             num_mutations = Integer[],
+                             fitness = Float64[],
+                             mutations = Array{Float64}[]
+                             )
+    
+    add_pops_to_dataframe!(finalresults,pops,params,treatment)   
+    CSV.write(filename, finalresults, append = append)    
 end
