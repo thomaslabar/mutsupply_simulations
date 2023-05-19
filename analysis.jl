@@ -86,7 +86,7 @@ function plot_mutation_data(df::DataFrame, filename::String)
     @assert "mutations" in names(df)    
     @assert "treatment" in names(df) 
     
-    treatment_names = sort(unique(df.treatment)) #I sort this so "Large_repaired is first, which is required in the loop below)
+    treatment_names = sort(unique(df.treatment)) #I sort this so "Large_repaired" is first, which is required in the loop below)
     @assert "Large_repaired" in treatment_names
 
     large_n = 0
@@ -121,6 +121,31 @@ function plot_mutation_data(df::DataFrame, filename::String)
     xlabel!("Fitness Effect")
     ylabel!("Num. Mutations")
     savefig(plt_top,"test_topn.png")
+
+    #Need different way to plot overlapping histograms
+    #Plot comparisons 1) "Large_repaired_all" vs. "Small_equalgen_all" and 2) "Large_repaired_all" vs. "Small_repaired_all"
+    y1 = mutation_df["Large_repaired_all"]
+    y2 = mutation_df["Small_equalgen_all"]
+    y3 = mutation_df["Small_repaired_all"]
+    p1 = histogram([y1,y2], title = "Large_repaired_all vs. \nSmall_equalgen_all", titlefontsize = 10, alpha = 0.5)
+    p2 = histogram([y1,y3], title = "Large_repaired_all vs. \nSmall_repaired_all", titlefontsize = 10, alpha = 0.5)
+    plt_compare_all = plot(p1,p2, layout=(1,2), legend = false)
+    xlims!(min_s,max_s)
+    xlabel!("Fitness Effect")
+    ylabel!("Num. Mutations")
+    savefig(plt_compare_all,"test_compare_all.png")
+
+    #Plot comparisons 1) "Large_repaired_topn" vs. "Small_repaired_topn" and 2) "Large_repaired" vs. "Small_totalsupply_topn"
+    y4 = mutation_df["Large_repaired_top_n"]
+    y5 = mutation_df["Small_repaired_top_n"]
+    y6 = mutation_df["Small_totalsupply_top_n"]
+    p1 = histogram([y4,y5], title = "Large_repaired_top_n vs. \nSmall_repaired_top_n", titlefontsize = 10, alpha = 0.5)
+    p2 = histogram([y4,y6], title = "Large_repaired_top_n vs. \nSmall_totalsupply_top_n", titlefontsize = 10, alpha = 0.5)
+    plt_compare_topn = plot(p1,p2, layout=(1,2), legend = false)
+    xlims!(min_s,max_s)
+    xlabel!("Fitness Effect")
+    ylabel!("Num. Mutations")
+    savefig(plt_compare_topn,"test_compare_topn.png")
     
 end
 
