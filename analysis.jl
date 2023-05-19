@@ -106,15 +106,22 @@ function plot_mutation_data(df::DataFrame, filename::String)
         mutation_df[t*"_top_n"] = top_mutation_data
     end
 
-    y_all = [mutation_df[t*"_all"] for t in treatment_names]
-    plt_all = histogram(y_all, layout = (2,2), legend = false, normalize=:pdf)
+    #Plot all 4 treatments showing all mutations
+    p_all = [histogram(mutation_df[t*"_all"], title = t) for t in treatment_names]
+    plt_all = plot(p_all[1],p_all[2],p_all[3],p_all[4],layout=(2,2), legend = false)
     xlims!(min_s,max_s)
+    xlabel!("Fitness Effect")
+    ylabel!("Num. Mutations")
     savefig(plt_all,"test_all.png")
-
-    y_top = [mutation_df[t*"_top_n"] for t in treatment_names]
-    plt_top = histogram(y_top, layout = (2,2), legend = false, normalize=:pdf)
+    
+    #Plot all 4 treatments showing top n mutations, where n is number in large populations
+    p_top = [histogram(mutation_df[t*"_top_n"], title = t) for t in treatment_names]
+    plt_top = plot(p_top[1],p_top[2],p_top[3],p_top[4],layout=(2,2), legend = false)
     xlims!(min_s,max_s)
+    xlabel!("Fitness Effect")
+    ylabel!("Num. Mutations")
     savefig(plt_top,"test_topn.png")
+    
 end
 
 function run_analysis()
