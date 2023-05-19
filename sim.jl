@@ -17,7 +17,7 @@ function mutation(population::Population)
             mutant_s_effect = rand(Exponential(clade.s_mean))
             new_mutations = deepcopy(clade.mutations)
             push!(new_mutations,mutant_s_effect)
-            mutant_clade = Clade(new_max_id,clade.id,clade.fitness+mutant_s_effect,clade.mutation_rate,clade.s_mean,new_mutations,1)
+            mutant_clade = Clade(new_max_id,clade.id,clade.fitness*(1.0+mutant_s_effect),clade.mutation_rate,clade.s_mean,new_mutations,1)
             push!(new_clades,mutant_clade)
         end
 
