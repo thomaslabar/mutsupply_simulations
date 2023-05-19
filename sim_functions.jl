@@ -113,3 +113,14 @@ function save_populations(filename::String, pops::Array{Population}, params::Par
     add_pops_to_dataframe!(finalresults,pops,params,treatment)   
     CSV.write(filename, finalresults, append = append)    
 end
+
+function get_abundant_fitness(population::Population)
+    """
+    This function returns the fitness of the most abundant clade (greatest number of individuals)
+    in a population.
+    """
+
+    clades = deepcopy(population.clades) #I create an extra copy in order to sort without altering the input pop.
+    sort!(clades, by = v -> v.individuals, rev = true)
+    return clades[1].fitness
+end

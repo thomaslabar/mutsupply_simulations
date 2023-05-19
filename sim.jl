@@ -71,12 +71,6 @@ function print_abundant_clades(population::Population, num_clades::Int)
     end
 end
 
-function get_abundant_fitness(population::Population)
-    clades = deepcopy(population.clades)
-    sort!(clades, by = v -> v.individuals, rev = true)
-    return clades[1].fitness
-end
-
 function get_avg_generation(populations::Array{Population})
     return sum([populations[i].generation for i in 1:length(populations)])/length(populations)
 end
