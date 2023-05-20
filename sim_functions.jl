@@ -133,3 +133,17 @@ function get_avg_generation(populations::Array{Population})
     """
     return sum([populations[i].generation for i in 1:length(populations)])/length(populations)
 end
+
+function print_abundant_clades(population::Population, num_clades::Int)
+
+    """
+    This function prints the top "num_clades" most-abundant clades (ranked by most individuals)
+    in a given population
+    """
+
+    clades = deepcopy(population.clades)
+    sort!(clades, by = v -> v.individuals, rev = true)
+    for i in 1:num_clades
+        println(clades[i])
+    end
+end

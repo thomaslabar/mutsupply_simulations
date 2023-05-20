@@ -63,14 +63,6 @@ function selection(population::Population)
 
 end
 
-function print_abundant_clades(population::Population, num_clades::Int)
-    clades = deepcopy(population.clades)
-    sort!(clades, by = v -> v.individuals, rev = true)
-    for i in 1:num_clades
-        println(clades[i])
-    end
-end
-
 function evolve(pop::Population, target_type::String, target::Number)
 
     @assert target_type == "Generation" || target_type == "Fitness"
