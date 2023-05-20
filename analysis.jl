@@ -81,6 +81,10 @@ function plot_mutation_data(df::DataFrame, filename::String)
     It makes the following plots:
         1. Histograms of mutational effects for all 4 treatments (test_all.png)
         2. Histograms of mutational effects for top n mutations for all 4 treatments (test_topn.png)
+        3. Histogroms comparing "Large_repaired_all" vs. "Small_equalgen_all" and "Large_repaired_all" vs. "Small_repaired_all"
+        4. Histogroms comparing "Large_repaired_topn" vs. "Small_repaired_topn" and "Large_repaired" vs. "Small_totalsupply_topn"
+
+    Note: All histograms are normalized by probability (i.e., the sum of the bar heights equals 1)
     """
 
     @assert "mutations" in names(df)    
@@ -162,7 +166,7 @@ function run_analysis()
     df = DataFrame(CSV.File(csv_file))
     
     save_mutation_stats(df, "test_mutation_stats.csv")
-    plot_mutation_data(df,"test_plots.jpg")
+    plot_mutation_data(df, "test_plots.jpg")
 end
 
 run_analysis()
