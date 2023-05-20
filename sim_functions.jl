@@ -124,3 +124,12 @@ function get_abundant_fitness(population::Population)
     sort!(clades, by = v -> v.individuals, rev = true)
     return clades[1].fitness
 end
+
+function get_avg_generation(populations::Array{Population})
+    """
+    This function calculates the mean generation across an array of replicate populations. it is used
+    to calculate the mean number of generations required for the large generations to repair their fitness loss.
+    This results is used to determine how long to evolve the small populations in certain treatments.
+    """
+    return sum([populations[i].generation for i in 1:length(populations)])/length(populations)
+end

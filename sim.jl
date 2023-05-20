@@ -71,10 +71,6 @@ function print_abundant_clades(population::Population, num_clades::Int)
     end
 end
 
-function get_avg_generation(populations::Array{Population})
-    return sum([populations[i].generation for i in 1:length(populations)])/length(populations)
-end
-
 function evolve(pop::Population, target_type::String, target::Number)
 
     @assert target_type == "Generation" || target_type == "Fitness"
