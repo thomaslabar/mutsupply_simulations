@@ -107,7 +107,7 @@ function plot_mutation_data(df::DataFrame, filename::String)
     end
 
     #Plot all 4 treatments showing all mutations
-    p_all = [histogram(mutation_df[t*"_all"], title = t) for t in treatment_names]
+    p_all = [histogram(mutation_df[t*"_all"], title = t, normalize=:probability, tickfontsize=6) for t in treatment_names]
     plt_all = plot(p_all[1],p_all[2],p_all[3],p_all[4],layout=(2,2), legend = false)
     xlims!(min_s,max_s)
     xlabel!("Fitness Effect")
@@ -115,7 +115,7 @@ function plot_mutation_data(df::DataFrame, filename::String)
     savefig(plt_all,"test_all.png")
     
     #Plot all 4 treatments showing top n mutations, where n is number in large populations
-    p_top = [histogram(mutation_df[t*"_top_n"], title = t) for t in treatment_names]
+    p_top = [histogram(mutation_df[t*"_top_n"], title = t, normalize=:probability, tickfontsize=6) for t in treatment_names]
     plt_top = plot(p_top[1],p_top[2],p_top[3],p_top[4],layout=(2,2), legend = false)
     xlims!(min_s,max_s)
     xlabel!("Fitness Effect")
@@ -127,8 +127,10 @@ function plot_mutation_data(df::DataFrame, filename::String)
     y1 = mutation_df["Large_repaired_all"]
     y2 = mutation_df["Small_equalgen_all"]
     y3 = mutation_df["Small_repaired_all"]
-    p1 = histogram([y1,y2], title = "Large_repaired_all vs. \nSmall_equalgen_all", titlefontsize = 10, alpha = 0.5)
-    p2 = histogram([y1,y3], title = "Large_repaired_all vs. \nSmall_repaired_all", titlefontsize = 10, alpha = 0.5)
+    p1 = histogram([y1,y2], title = "Large_repaired_all vs. \nSmall_equalgen_all", titlefontsize = 10, alpha = 0.5, 
+                   normalize=:probability, tickfontsize=6)
+    p2 = histogram([y1,y3], title = "Large_repaired_all vs. \nSmall_repaired_all", titlefontsize = 10, alpha = 0.5, 
+                   normalize=:probability, tickfontsize=6)
     plt_compare_all = plot(p1,p2, layout=(1,2), legend = false)
     xlims!(min_s,max_s)
     xlabel!("Fitness Effect")
@@ -139,8 +141,10 @@ function plot_mutation_data(df::DataFrame, filename::String)
     y4 = mutation_df["Large_repaired_top_n"]
     y5 = mutation_df["Small_repaired_top_n"]
     y6 = mutation_df["Small_totalsupply_top_n"]
-    p1 = histogram([y4,y5], title = "Large_repaired_top_n vs. \nSmall_repaired_top_n", titlefontsize = 10, alpha = 0.5)
-    p2 = histogram([y4,y6], title = "Large_repaired_top_n vs. \nSmall_totalsupply_top_n", titlefontsize = 10, alpha = 0.5)
+    p1 = histogram([y4,y5], title = "Large_repaired_top_n vs. \nSmall_repaired_top_n", titlefontsize = 10, alpha = 0.5, 
+                   normalize=:probability, tickfontsize=6)
+    p2 = histogram([y4,y6], title = "Large_repaired_top_n vs. \nSmall_totalsupply_top_n", titlefontsize = 10, alpha = 0.5, 
+                   normalize=:probability, tickfontsize=6)
     plt_compare_topn = plot(p1,p2, layout=(1,2), legend = false)
     xlims!(min_s,max_s)
     xlabel!("Fitness Effect")
