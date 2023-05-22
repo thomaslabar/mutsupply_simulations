@@ -147,3 +147,39 @@ function print_abundant_clades(population::Population, num_clades::Int)
         println(clades[i])
     end
 end
+
+function mutation(population::Population)
+    """
+    This function takes a population and generates mutations for the next generation. It does not modify
+    the current population, but returns a new one. It loops through each clade and calulates the number of 
+    mutants by with a Poisson distribution with a mean of the number of individuals in the clade multiplied
+    by the clade's mutation rate. Then, it loops through the mutants and samples its fitness effect by 
+    generation a random Exponentially-distributed number with mean equal to the clade's s_mean. It creates
+    a new clade for each mutant with one individual. Finally, if there are any non-mutant individuals left
+    in a clade, it recreates a new clade with the adjusted number (this is necessary because Clades are 
+    immutable)
+    """
+    new_clades = Clade[]
+    new_max_id = population.max_id
+
+    for clade in population.clades
+        
+        #handle mutants
+        num_mutants = min(rand(Poisson(clade.individuals*clade.mutation_rate)),clade.individuals)
+        for m in 1:num_mutants
+            new_max_id += 1
+            mutant_s_effect = rand(Exponential(clade.s_mean))
+            new_mutations = deepcopy(clade.mutations)
+            push!(new_mutations,mutant_s_effect)
+            mutant_clade = Clade(new_max_id,clade.id,clade.fitness*(1.0+mutant_s_effect),clade.mutation_rate,clade.s_mean,new_mutations,1)
+            push!(new_clades,mutant_clade)
+        end
+
+        #handle non-mutants
+        if clade.individuals - num_mutants > 0
+            push!(new_clades,Clade(clade.id,clade.ancestor,clade.fitness,clade.mutation_rate,clade.s_mean,clade.mutations,clade.individuals - num_mutants))
+        end
+    end
+
+    return Population(new_clades,new_max_id,population.populationsize,population.generation+1)     
+end
