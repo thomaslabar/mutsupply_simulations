@@ -183,3 +183,44 @@ function mutation(population::Population)
 
     return Population(new_clades,new_max_id,population.populationsize,population.generation+1)     
 end
+
+function selection(population::Population)
+    """
+    This function takes a population and performs selection on it (i.e., generates frequencies of each
+    clade for the next generation). Like the mutation function, it doesn't modify the input population,
+    but returns a new population struct. This function calculates the number of individuals per clade
+    in the next generation by first calculating the weighted fitness per clade (where the weights are 
+    proportional to the product of the number of individuals in the clade and the clade's relative_fitness
+    fitness). These weights are then used for Multinomial sampling to generate the next generation's 
+    clade abundances (with total population size kept constant between generations).  
+    """
+
+    clade_fitness = Float64[]
+    clade_individuals = Float64[]
+    for clade in population.clades
+        push!(clade_individuals,clade.individuals)
+        push!(clade_fitness,clade.fitness)
+    end
+    n = population.populationsize
+
+    clade_frequencies = [v/n for v in clade_individuals]
+
+    average_fitness = dot(clade_fitness,clade_frequencies)
+    relative_fitness = [v/average_fitness for v in clade_fitness]
+    weighted_fitness = [v*(clade_individuals[i]/n) for (i, v) in enumerate(relative_fitness)]
+
+    #For the below assertion, I need something like the sum is close enough to 1 so that it works as an expectation function
+    #@assert sum(weighted_fitness) == 1.0
+    num_offspring = rand(Multinomial(n,weighted_fitness))
+    
+    new_clades = Clade[]
+    for (i,clade) in enumerate(population.clades)
+        if num_offspring[i] > 0
+            push!(new_clades,Clade(clade.id,clade.ancestor,clade.fitness,clade.mutation_rate,clade.s_mean,clade.mutations,
+            num_offspring[i]))
+        end
+    end
+
+    return Population(new_clades,population.max_id,n,population.generation)
+
+end
