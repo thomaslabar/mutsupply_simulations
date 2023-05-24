@@ -15,6 +15,7 @@ struct Parameters
     ancestorfitness::Float64
     replicates::Int
     random_seed::Int
+    savefile::String
 end
 
 """
@@ -66,7 +67,8 @@ function get_parameters(config_file::String)
                         parse(Float64,retrieve(conf, "BENEFICIAL_EFFECT")),
                         parse(Float64,retrieve(conf, "ANCESTOR_FITNESS")),
                         parse(Int,retrieve(conf, "NUM_REPLICATES")),
-                        parse(Int,retrieve(conf, "RANDOM_SEED")))
+                        parse(Int,retrieve(conf, "RANDOM_SEED")),
+                        retrieve(conf, "SAVE_FILE"))
 
     return params
 end
@@ -212,18 +214,9 @@ function selection(population::Population)
     #For the below assertion, I need something like the sum is close enough to 1 so that it works as an expectation function
     #@assert sum(weighted_fitness) == 1.0
     num_offspring = rand(Multinomial(n,weighted_fitness))
-    
-    new_clades = Clade[]
-    for (i,clade) in enumerate(population.clades)
-        if num_offspring[i] > 0
-            push!(new_clades,Clade(clade.id,clade.ancestor,clade.fitness,clade.mutation_rate,clade.s_mean,clade.mutations,
-            num_offspring[i]))
-        end
-    end
-    """
     new_clades = [Clade(clade.id,clade.ancestor,clade.fitness,clade.mutation_rate,clade.s_mean,clade.mutations,
                   num_offspring[i]) for (i,clade) in enumerate(population.clades) if num_offspring[i] > 0]
-    """
+    
     return Population(new_clades,population.max_id,n,population.generation)
 
 end
