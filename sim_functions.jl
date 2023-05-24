@@ -220,7 +220,10 @@ function selection(population::Population)
             num_offspring[i]))
         end
     end
-
+    """
+    new_clades = [Clade(clade.id,clade.ancestor,clade.fitness,clade.mutation_rate,clade.s_mean,clade.mutations,
+                  num_offspring[i]) for (i,clade) in enumerate(population.clades) if num_offspring[i] > 0]
+    """
     return Population(new_clades,population.max_id,n,population.generation)
 
 end
