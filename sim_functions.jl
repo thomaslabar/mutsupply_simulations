@@ -220,3 +220,28 @@ function selection(population::Population)
     return Population(new_clades,population.max_id,n,population.generation)
 
 end
+
+function evolve(pop::Population, criteria_type::String, criteria::Number)
+
+    """
+    This function evolves a population until some criteria is reached. The criteria types can either be
+    a number of generations or a target fitness. Evolution works by iterating the population through rounds
+    of selection then mutation.
+    """
+
+    @assert criteria_type == "Generation" || criteria_type == "Fitness"
+    @assert criteria > 0
+
+    if criteriatype == "Generation"
+        while pop.generation < criteria
+            pop = selection(pop)
+            pop = mutation(pop)
+        end
+    elseif criteria_type == "Fitness"
+        while get_abundant_fitness(pop) < criteria
+            pop = selection(pop)
+            pop = mutation(pop)
+        end
+    end
+    return pop
+end

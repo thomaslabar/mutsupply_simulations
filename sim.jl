@@ -4,24 +4,6 @@ using CSV
 
 include("sim_functions.jl")
 
-function evolve(pop::Population, target_type::String, target::Number)
-
-    @assert target_type == "Generation" || target_type == "Fitness"
-
-    if target_type == "Generation"
-        while pop.generation < target
-            pop = selection(pop)
-            pop = mutation(pop)
-        end
-    elseif target_type == "Fitness"
-        while get_abundant_fitness(pop) < target
-            pop = selection(pop)
-            pop = mutation(pop)
-        end
-    end
-    return pop
-end
-
 function run_sim()
 
     params = get_parameters("sim.cfg")
