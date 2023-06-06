@@ -232,7 +232,7 @@ function evolve(pop::Population, criteria_type::String, criteria::Number)
     @assert criteria_type == "Generation" || criteria_type == "Fitness"
     @assert criteria > 0
 
-    if criteriatype == "Generation"
+    if criteria_type == "Generation"
         while pop.generation < criteria
             pop = selection(pop)
             pop = mutation(pop)
