@@ -6,6 +6,7 @@ using CSV
 using DataFrames
 using Statistics
 using Plots
+using StatsPlots
 
 function convert_mutation_data_to_array(mutations::Array{String})
 
@@ -115,7 +116,7 @@ function plot_mutation_data(df::DataFrame, filename::String)
     plt_all = plot(p_all[1],p_all[2],p_all[3],p_all[4],layout=(2,2), legend = false)
     xlims!(min_s,max_s)
     xlabel!("Fitness Effect")
-    ylabel!("Num. Mutations")
+    ylabel!("Num. Mutations (Norm.)")
     savefig(plt_all,"test_all.png")
     
     #Plot all 4 treatments showing top n mutations, where n is number in large populations
@@ -123,7 +124,7 @@ function plot_mutation_data(df::DataFrame, filename::String)
     plt_top = plot(p_top[1],p_top[2],p_top[3],p_top[4],layout=(2,2), legend = false)
     xlims!(min_s,max_s)
     xlabel!("Fitness Effect")
-    ylabel!("Num. Mutations")
+    ylabel!("Num. Mutations (Norm.)")
     savefig(plt_top,"test_topn.png")
 
     #Need different way to plot overlapping histograms
@@ -138,7 +139,7 @@ function plot_mutation_data(df::DataFrame, filename::String)
     plt_compare_all = plot(p1,p2, layout=(1,2), legend = false)
     xlims!(min_s,max_s)
     xlabel!("Fitness Effect")
-    ylabel!("Num. Mutations")
+    ylabel!("Num. Mutations (Norm.)")
     savefig(plt_compare_all,"test_compare_all.png")
 
     #Plot comparisons 1) "Large_repaired_topn" vs. "Small_repaired_topn" and 2) "Large_repaired" vs. "Small_totalsupply_topn"
@@ -152,9 +153,75 @@ function plot_mutation_data(df::DataFrame, filename::String)
     plt_compare_topn = plot(p1,p2, layout=(1,2), legend = false)
     xlims!(min_s,max_s)
     xlabel!("Fitness Effect")
-    ylabel!("Num. Mutations")
+    ylabel!("Num. Mutations (Norm.)")
     savefig(plt_compare_topn,"test_compare_topn.png")
     
+    p1 = histogram([y1,y2], title = "Equal Generations", titlefontsize = 10, 
+                   normalize=:probability, tickfontsize=6, label = ["Large" "Small"], color = [:red :blue], alpha = 0.5)
+    plt_compare_topn = plot(p1, layout=(1,1))
+    xlims!(min_s,max_s)
+    xlabel!("Fitness Effect")
+    ylabel!("Num. Mutations (Norm.)")
+    savefig(plt_compare_topn,"fitness_effects_equalgen.png")
+
+    p1 = histogram([y1,y3], title = "Similar Fitness", titlefontsize = 10, 
+                   normalize=:probability, tickfontsize=6, label = ["Large" "Small"], color = [:red :blue], alpha = 0.5)
+    plt_compare_topn = plot(p1, layout=(1,1))
+    xlims!(min_s,max_s)
+    xlabel!("Fitness Effect")
+    ylabel!("Num. Mutations (Norm.)")
+    savefig(plt_compare_topn,"fitness_effects_simfitness.png")
+    
+end
+
+function plot_fixedmutations_data(df::DataFrame)
+    
+    @assert "num_mutations" in names(df)    
+    @assert "treatment" in names(df) 
+    
+    treatment_names = sort(unique(df.treatment)) #I sort this so "Large_repaired" is first, which is required in the loop below)
+    @assert "Large_repaired" in treatment_names
+
+    mutation_df = Dict()
+    for t in treatment_names
+        treatment_data = filter(:treatment => n -> n == t, df)
+        mutation_df[t] = treatment_data[!,"num_mutations"]
+        println(t," ",mean(treatment_data[!,"num_mutations"])," ",std(treatment_data[!,"num_mutations"]))
+    end
+
+    y1 = mutation_df["Large_repaired"]
+    y2 = mutation_df["Small_repaired"]
+    p1 = boxplot([y1,y2], title = "Similar Fitness", titlefontsize = 10, 
+    tickfontsize=6, label = ["Large" "Small"], color = [:red :blue], alpha = 0.5, xticks = (1:2, ["",""]))
+    fixed_muts = plot(p1, layout=(1,1))
+    ylabel!("Num. Mutations")
+    savefig(fixed_muts,"fixed_mutations_simfitness.png")
+
+end
+
+function plot_generations_data(df::DataFrame)
+    
+    @assert "generation" in names(df)    
+    @assert "treatment" in names(df) 
+    
+    treatment_names = sort(unique(df.treatment)) #I sort this so "Large_repaired" is first, which is required in the loop below)
+    @assert "Large_repaired" in treatment_names
+
+    mutation_df = Dict()
+    for t in treatment_names
+        treatment_data = filter(:treatment => n -> n == t, df)
+        mutation_df[t] = treatment_data[!,"generation"]
+        println(t," ",mean(treatment_data[!,"generation"])," ",std(treatment_data[!,"generation"]))
+    end
+
+    y1 = mutation_df["Large_repaired"]
+    y2 = mutation_df["Small_repaired"]
+    p1 = boxplot([y1,y2], title = "Similar Fitness", titlefontsize = 10, 
+    tickfontsize=6, label = ["Large" "Small"], color = [:red :blue], alpha = 0.5, xticks = (1:2, ["",""]))
+    fixed_muts = plot(p1, layout=(1,1))
+    ylabel!("Generations")
+    savefig(fixed_muts,"generations_simfitness.png")
+
 end
 
 function run_analysis()
@@ -165,8 +232,10 @@ function run_analysis()
     csv_file  = "test.csv"
     df = DataFrame(CSV.File(csv_file))
     
-    save_mutation_stats(df, "test_mutation_stats.csv")
-    plot_mutation_data(df, "test_plots.jpg")
+    #save_mutation_stats(df, "test_mutation_stats.csv")
+    #plot_mutation_data(df, "test_plots.jpg")
+    #plot_fixedmutations_data(df)
+    plot_generations_data(df)
 end
 
 run_analysis()
