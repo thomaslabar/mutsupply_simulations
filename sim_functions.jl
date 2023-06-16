@@ -98,6 +98,11 @@ function save_populations(filename::String, pops::Array{Population}, params::Par
     of the population/experiment and the treatment.
     """
 
+    try
+        mkdir("Data")
+    catch e
+        println("Data directory already exists")
+    end
 
     finalresults = DataFrame(treatment = String[],
                              replicate = Int64[],
@@ -113,7 +118,7 @@ function save_populations(filename::String, pops::Array{Population}, params::Par
                              )
     
     add_pops_to_dataframe!(finalresults,pops,params,treatment)   
-    CSV.write(filename, finalresults, append = append)    
+    CSV.write("Data/"*filename, finalresults, append = append)    
 end
 
 function get_abundant_fitness(population::Population)
