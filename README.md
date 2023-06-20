@@ -20,7 +20,7 @@ small populations evolve until they experience the same total experimental mutat
 have 100x more individuals as the small populations, the small populations will evolve for 100x more generations.
 At the end of each of these steps, data is saved in CSV format.
 
-The project currently consists of three files:
+The project currently consists of four files:
 
 1. sim.jl, which contains all the structs and functions required to run the simulations in addition to 
 actually running the simulation itself. Later, this file will seperate the actual running of the simulation 
@@ -35,9 +35,22 @@ from struct and function definitions.
     - Random seed
     - Save File Name (all data saved to one file)
 
-3. sim_functions.jl (work in progress), which will contain all functions to run simulations.
+3. sim_functions.jl, which contains all functions to run simulations.
 
-4. analysis.jl (work in progress), which contains all code to analyze the results of the simulations
+4. analysis.jl, which contains all code to analyze the results of the simulations and 
+make all figures
+
+
+The simulations can be run from the command line as follows:
+```
+julia sim.jl
+```
+
+Parameters can be altered from the default in 'sim.cfg' on the command line:
+```
+julia sim.jl -set {PARAMETER1} {value1} -set {PARAMETER2} {value2}
+```
+
 
 ## Acknowledgments
 
