@@ -54,21 +54,43 @@ end
 
 function get_parameters(config_file::String)
     """
-    This function reads in data from the specified config file (sim.cfg) and returns a 
-    parameter struct to store the data
+    This function reads in data from the specified config file (sim.cfg) and the command line
+    and then returns a parameter struct to store the data
     """
 
     conf = ConfParse(config_file)
     parse_conf!(conf)
 
-    params = Parameters(parse(Int,retrieve(conf, "LARGE_POPULATION_SIZE")),
-                        parse(Int,retrieve(conf, "SMALL_POPULATION_SIZE")),
-                        parse(Float64,retrieve(conf, "MUTATION_RATE")),
-                        parse(Float64,retrieve(conf, "BENEFICIAL_EFFECT")),
-                        parse(Float64,retrieve(conf, "ANCESTOR_FITNESS")),
-                        parse(Int,retrieve(conf, "NUM_REPLICATES")),
-                        parse(Int,retrieve(conf, "RANDOM_SEED")),
-                        retrieve(conf, "SAVE_FILE"))
+    #Note: the below code is structured in such a way because a Parameters struct is immutable
+
+    #Read default data in from sim.cfg
+    temp_params = Dict()
+    temp_params["LARGE_POPULATION_SIZE"] = retrieve(conf, "LARGE_POPULATION_SIZE")
+    temp_params["SMALL_POPULATION_SIZE"] = retrieve(conf, "SMALL_POPULATION_SIZE")
+    temp_params["MUTATION_RATE"] = retrieve(conf, "MUTATION_RATE")
+    temp_params["BENEFICIAL_EFFECT"] = retrieve(conf, "BENEFICIAL_EFFECT")
+    temp_params["ANCESTOR_FITNESS"] = retrieve(conf, "ANCESTOR_FITNESS")
+    temp_params["NUM_REPLICATES"] = retrieve(conf, "NUM_REPLICATES")
+    temp_params["RANDOM_SEED"] = retrieve(conf, "RANDOM_SEED")
+    temp_params["SAVE_FILE"] = retrieve(conf, "SAVE_FILE")
+    
+    #Change default values based on command line inputs
+    @assert length(ARGS)%3 == 0 #Should be true because each variable changes requires '-set', '{Parameter}', '{value}'
+    true_arg_length = Int(length(ARGS)/3)
+    for i in 1:true_arg_length
+        @assert ARGS[3*(i-1)+1] == "-set"
+        temp_params[ARGS[3*(i-1)+2]] = ARGS[3*i]
+    end
+    
+    #Create Parameters struct
+    params = Parameters(parse(Int,temp_params["LARGE_POPULATION_SIZE"]),
+                        parse(Int,temp_params["SMALL_POPULATION_SIZE"]),
+                        parse(Float64,temp_params["MUTATION_RATE"]),
+                        parse(Float64,temp_params["BENEFICIAL_EFFECT"]),
+                        parse(Float64,temp_params["ANCESTOR_FITNESS"]),
+                        parse(Int,temp_params["NUM_REPLICATES"]),
+                        parse(Int,temp_params["RANDOM_SEED"]),
+                        temp_params["SAVE_FILE"])
 
     return params
 end
