@@ -156,6 +156,7 @@ function plot_mutation_data(df::DataFrame, filename::String)
     ylabel!("Num. Mutations (Norm.)")
     savefig(plt_compare_topn,"test_compare_topn.png")
     
+    """
     p1 = histogram([y1,y2], title = "Equal Generations", titlefontsize = 10, 
                    normalize=:probability, tickfontsize=6, label = ["Large" "Small"], color = [:red :blue], alpha = 0.5)
     plt_compare_topn = plot(p1, layout=(1,1))
@@ -171,7 +172,7 @@ function plot_mutation_data(df::DataFrame, filename::String)
     xlabel!("Fitness Effect")
     ylabel!("Num. Mutations (Norm.)")
     savefig(plt_compare_topn,"fitness_effects_simfitness.png")
-    
+    """
 end
 
 function plot_fixedmutations_data(df::DataFrame)
