@@ -1,6 +1,4 @@
-using Distributions
-using LinearAlgebra
-using CSV
+using Dates
 
 include("sim_functions.jl")
 
@@ -23,7 +21,10 @@ function run_sim()
 
     #Evolve large populations to restore fitness
     for i in 1:params.replicates
+        t1 = now()
         large_populations[i] = evolve(large_populations[i],"Fitness",1.0)
+        t2 = now()
+        println("Large: ",i,"; Time: ",t2-t1)
     end
     save_populations(params.savefile,large_populations,params,"Large_repaired",false)
     println("Large populations repaired and saved")
@@ -45,7 +46,10 @@ function run_sim()
 
     #Evolve small populations to same total mutation supply (N*mu*g) as large populations
     for i in 1:params.replicates
+        t3 = now()
         small_populations[i] = evolve(small_populations[i],"Generation",gen_target*(params.largepopulationsize/params.smallpopulationsize))
+        t4 = now()
+        println("Small total muS: ",i,"; Time: ",t4-t3)
     end
     save_populations(params.savefile,small_populations,params,"Small_totalsupply",true)
     println("Small populations evolved for same total mutation supply as large populations and saved")

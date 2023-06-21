@@ -1,7 +1,9 @@
 using Random
 using ConfParser
 using DataFrames
-
+using Distributions
+using LinearAlgebra
+using CSV
 
 """
 The Parameters struct is used to hold all the relevant parameters for the experiment. It is created from
