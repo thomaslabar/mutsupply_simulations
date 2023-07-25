@@ -38,7 +38,7 @@ from struct and function definitions.
 3. sim_functions.jl, which contains all functions to run simulations.
 
 4. analysis.jl, which contains all code to analyze the results of the simulations and 
-make all figures
+make all figures (a work in progress)
 
 
 The simulations can be run from the command line as follows:
